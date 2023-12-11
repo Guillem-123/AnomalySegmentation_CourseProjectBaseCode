@@ -80,6 +80,16 @@ class CrossEntropyLoss2d(torch.nn.Module):
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
+    
+class MaxLogit(torch.nn.Module):
+
+    def __init__(self, weight=None):
+        super().__init__()
+
+        self.loss = torch.nn.NLLLoss2d(weight)
+
+    def forward(self, outputs, targets):
+        return self.loss(torch.max(outputs,dim=1), targets)
 
 
 def train(args, model, enc=False):
@@ -144,11 +154,15 @@ def train(args, model, enc=False):
 
     if args.cuda:
         weight = weight.cuda()
-    criterion = CrossEntropyLoss2d(weight)
+    if(args.loss == 'max_entropy'):
+        criterion = torch.nn.CrossEntropyLoss(weight)
+    if(args.loss == 'max_logit'):
+        criterion = MaxLogit(weight)
+    if(args.loss == 'msp'):
+        criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
-
     if (enc):
         automated_log_path = savedir + "/automated_log_encoder.txt"
         modeltxtpath = savedir + "/model_encoder.txt"
@@ -503,5 +517,7 @@ if __name__ == '__main__':
     parser.add_argument('--iouTrain', action='store_true', default=False) #recommended: False (takes more time to train otherwise)
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
+
+    parser.add_argument('--loss', default="msp")
 
     main(parser.parse_args())
