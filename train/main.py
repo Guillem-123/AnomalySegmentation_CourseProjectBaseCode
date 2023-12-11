@@ -89,7 +89,17 @@ class MaxLogit(torch.nn.Module):
         self.loss = torch.nn.NLLLoss2d(weight)
 
     def forward(self, outputs, targets):
-        return self.loss(torch.max(outputs,dim=1), targets)
+        return self.loss(torch.nn.functional.binary_cross_entropy_with_logits(outputs,dim=1), targets)
+    
+class MaxEntropy(torch.nn.Module):
+
+    def __init__(self, weight=None):
+        super().__init__()
+
+        self.loss = torch.nn.NLLLoss2d(weight)
+
+    def forward(self, outputs, targets):
+        return self.loss(torch.nn.functional.cross_entropy(outputs,dim=1), targets)
 
 
 def train(args, model, enc=False):
@@ -155,7 +165,7 @@ def train(args, model, enc=False):
     if args.cuda:
         weight = weight.cuda()
     if(args.loss == 'max_entropy'):
-        criterion = torch.nn.CrossEntropyLoss(weight)
+        criterion = MaxEntropy(weight)
     if(args.loss == 'max_logit'):
         criterion = MaxLogit(weight)
     if(args.loss == 'msp'):
