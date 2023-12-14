@@ -1,7 +1,7 @@
 import os
 import torch
 import torchvision as tv
-from erfnet import ERFNet
+from erfnet import Net as ERFNet
 from temperature_scaling import ModelWithTemperature
 from torch.utils.data import DataLoader
 from argparse import ArgumentParser
@@ -69,4 +69,6 @@ if __name__ == '__main__':
     parser.add_argument('--saveDir', required=True) 
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=6)
+    parser.add_argument('--datadir', default=os.getenv("HOME") + "/datasets/cityscapes/")
+    parser.add_argument('--height', type=int, default=512)
     demo(parser.parse_args())
