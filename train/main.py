@@ -89,8 +89,11 @@ class MaxLogit(torch.nn.Module):
         self.loss = torch.nn.NLLLoss2d(weight)
 
     def forward(self, outputs, targets):
-        return self.loss(torch.nn.functional.binary_cross_entropy_with_logits(outputs,dim=1), targets)
-    
+        max_values, _ = torch.max(outputs, dim=1)
+        max_values = max_values.unsqueeze(1)
+        max_values = max_values.expand(-1, 20, -1, -1)
+        return self.loss(max_values, targets)
+
 class MaxEntropy(torch.nn.Module):
 
     def __init__(self, weight=None):
@@ -99,7 +102,11 @@ class MaxEntropy(torch.nn.Module):
         self.loss = torch.nn.NLLLoss2d(weight)
 
     def forward(self, outputs, targets):
-        return self.loss(torch.nn.functional.cross_entropy(outputs,dim=1), targets)
+        probs =   torch.nn.functional.softmax(outputs, dim=1)
+        entropy = torch.div(torch.sum(-probs * torch.log(probs), dim=1), torch.log(torch.tensor(probs.shape[1])))
+        entropy = entropy.unsqueeze(1)
+        entropy = entropy.expand(-1, 20, -1, -1)
+        return self.loss(entropy, targets)
 
 
 def train(args, model, enc=False):
