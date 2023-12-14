@@ -17,25 +17,30 @@ def demo(args):
     NUM_CLASSES = 20
 
     model = ERFNet(NUM_CLASSES)
-    
-    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict keys are there
-            own_state = model.state_dict()
-            for name, param in state_dict.items():
-                if name not in own_state:
-                     continue
-                own_state[name].copy_(param)
-            return model
 
-        #print(torch.load(args.state))
-    model = load_my_state_dict(model, torch.load(args.state))
     model = torch.nn.DataParallel(model).cuda()
+    
+    def load_my_state_dict(model, state_dict):  #custom function to load model when not all dict elements
+        own_state = model.state_dict()
+        for name, param in state_dict.items():
+            if name not in own_state:
+                if name.startswith("module."):
+                    own_state[name.split("module.")[-1]].copy_(param)
+                else:
+                    print(name, " not loaded")
+                    continue
+            else:
+                own_state[name].copy_(param)
+        return model
+
+    model = load_my_state_dict(model, torch.load(weightspath, map_location=lambda storage, loc: storage))
     print ("Model and weights LOADED successfully")
 
     # Now we're going to wrap the model with a decorator that adds temperature scaling
     model_with_temp = ModelWithTemperature(model)
 
     co_transform_val = MyCoTransform(False, augment=False, height=args.height)#1024)
-    dataset_val = cityscapes(args.datadir, co_transform_val, 'val')
+    dataset_val = cityscapes(args.datadir, None , 'val')
     loader_val = DataLoader(dataset_val, num_workers=args.num_workers, batch_size=args.batch_size, shuffle=False)
 
     # Tune the model temperature, and save the results
