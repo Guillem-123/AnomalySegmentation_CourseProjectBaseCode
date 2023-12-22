@@ -1,4 +1,7 @@
-Cityscapes/
+Cityscapes/gtFine/test/
+Cityscapes/gtFine/train/
+Cityscapes/leftImg8bit/test/
+Cityscapes/leftImg8bit/train/
 .DS_Store
 launch.json
 *.pyc
