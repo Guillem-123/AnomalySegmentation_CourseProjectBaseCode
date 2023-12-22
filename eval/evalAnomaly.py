@@ -86,12 +86,12 @@ def main():
         images = images.permute(0,3,1,2)
         with torch.no_grad():
             result = model(images)
-        if (args.discriminant == "maxLogit"):
+        if (args.discriminant == "maxlogit"):
           anomaly_result = 1.0 - (np.max(result.squeeze(0).data.cpu().numpy(), axis=0) / args.temperature)
         if (args.discriminant == "msp"):
           softmax_probs = torch.nn.functional.softmax(result.squeeze(0), dim=0)
           anomaly_result = 1.0 - (np.max(softmax_probs.data.cpu().numpy(), axis=0) / args.temperature)
-        if (args.discriminant == "MaxEnt"):
+        if (args.discriminant == "maxentropy"):
           max_entropy = (-torch.sum(torch.nn.functional.softmax(result.squeeze(0), dim=0) * torch.nn.functional.log_softmax(result.squeeze(0), dim=0), dim=0) / args.temperature)
           anomaly_result = max_entropy.data.cpu().numpy()         
         pathGT = path.replace("images", "labels_masks")                
@@ -148,7 +148,7 @@ def main():
     print(f'AUPRC score: {prc_auc*100.0}')
     print(f'FPR@TPR95: {fpr*100.0}')
 
-    file.write(('    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0) ))
+    file.write(('Discriminant:' + str(args.discriminant) + '    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0) ))
     file.close()
 
 if __name__ == '__main__':
