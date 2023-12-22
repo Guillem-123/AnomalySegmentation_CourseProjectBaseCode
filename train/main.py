@@ -80,33 +80,6 @@ class CrossEntropyLoss2d(torch.nn.Module):
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
-    
-class MaxLogit(torch.nn.Module):
-
-    def __init__(self, weight=None):
-        super().__init__()
-
-        self.loss = torch.nn.NLLLoss2d(weight)
-
-    def forward(self, outputs, targets):
-        max_values, _ = torch.max(outputs, dim=1)
-        max_values = max_values.unsqueeze(1)
-        max_values = max_values.expand(-1, 20, -1, -1)
-        return self.loss(max_values, targets)
-
-class MaxEntropy(torch.nn.Module):
-
-    def __init__(self, weight=None):
-        super().__init__()
-
-        self.loss = torch.nn.NLLLoss2d(weight)
-
-    def forward(self, outputs, targets):
-        probs =   torch.nn.functional.softmax(outputs, dim=1)
-        entropy = torch.div(torch.sum(-probs * torch.log(probs), dim=1), torch.log(torch.tensor(probs.shape[1])))
-        entropy = entropy.unsqueeze(1)
-        entropy = entropy.expand(-1, 20, -1, -1)
-        return self.loss(entropy, targets)
 
 
 def train(args, model, enc=False):
@@ -171,15 +144,11 @@ def train(args, model, enc=False):
 
     if args.cuda:
         weight = weight.cuda()
-    if(args.loss == 'max_entropy'):
-        criterion = MaxEntropy(weight)
-    if(args.loss == 'max_logit'):
-        criterion = MaxLogit(weight)
-    if(args.loss == 'msp'):
-        criterion = CrossEntropyLoss2d(weight)
+    criterion = CrossEntropyLoss2d(weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
+
     if (enc):
         automated_log_path = savedir + "/automated_log_encoder.txt"
         modeltxtpath = savedir + "/model_encoder.txt"
@@ -534,7 +503,5 @@ if __name__ == '__main__':
     parser.add_argument('--iouTrain', action='store_true', default=False) #recommended: False (takes more time to train otherwise)
     parser.add_argument('--iouVal', action='store_true', default=True)  
     parser.add_argument('--resume', action='store_true')    #Use this flag to load last checkpoint for training  
-
-    parser.add_argument('--loss', default="msp")
 
     main(parser.parse_args())
