@@ -80,7 +80,7 @@ def main():
     print ("Model and weights LOADED successfully")
     model.eval()
     
-    temperature = args.temperature.astype('float')
+    temperature = float(args.temperature)
 
     for path in glob.glob(os.path.expanduser(str(args.input[0]))):
         print(path)
