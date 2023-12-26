@@ -89,13 +89,13 @@ def main():
         with torch.no_grad():
             result = model(images)
         if (args.discriminant == "maxlogit"):
-          anomaly_result = 1.0 - (np.max(result.squeeze(0).data.cpu().numpy(), axis=0) / temperature)
+          anomaly_result = (np.max(result.squeeze(0).data.cpu().numpy(), axis=0))
         if (args.discriminant == "msp"):
-          softmax_probs = torch.nn.functional.softmax(result.squeeze(0), dim=0)
-          anomaly_result = 1.0 - (np.max(softmax_probs.data.cpu().numpy(), axis=0) / temperature)
+          softmax_probs = torch.nn.functional.softmax(result.squeeze(0) / temperature, dim=0)
+          anomaly_result = 1.0 - (np.max(softmax_probs.data.cpu().numpy(), axis=0))
         if (args.discriminant == "maxentropy"):
-          max_entropy = (-torch.sum(torch.nn.functional.softmax(result.squeeze(0), dim=0) * torch.nn.functional.log_softmax(result.squeeze(0), dim=0), dim=0) / temperature)
-          anomaly_result = max_entropy.data.cpu().numpy()         
+          max_entropy = (-torch.sum(torch.nn.functional.softmax(result.squeeze(0), dim=0) * torch.nn.functional.log_softmax(result.squeeze(0), dim=0), dim=0))
+          anomaly_result = 1.0 - max_entropy.data.cpu().numpy()         
         pathGT = path.replace("images", "labels_masks")                
         if "RoadObsticle21" in pathGT:
            pathGT = pathGT.replace("webp", "png")
