@@ -17,8 +17,8 @@ Discriminant:maxentropy     AUPRC score:14.309849930559887   FPR@TPR95:96.716043
 
 ------------------------------------ Road Obstacle 21 -----------------------------------
 
-Discriminant:maxlogit       AUPRC score:1.152635914247152   FPR@TPR95:86.81553498163159
-Discriminant:msp            AUPRC score:0.720794902040506   FPR@TPR95:94.76850858347379
+Discriminant:maxlogit       AUPRC score:1.152635914247152    FPR@TPR95:86.81553498163159
+Discriminant:msp            AUPRC score:0.720794902040506    FPR@TPR95:94.76850858347379
 Discriminant:maxentropy     AUPRC score:0.8318294597067724   FPR@TPR95:94.08380013239386
 
 ------------------------------------    FS Static    -----------------------------------
