@@ -96,7 +96,7 @@ def main():
         path_to_anomaly_imgs = path.replace('images', 'anomaly_results')
         image.save(path_to_anomaly_imgs)
 
-        del result, anomaly_result, ood_gts, mask
+        del result, anomaly_result
         torch.cuda.empty_cache()
 
 if __name__ == '__main__':
