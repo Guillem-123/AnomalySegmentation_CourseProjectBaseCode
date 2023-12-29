@@ -1,0 +1,40 @@
+------------------------------------ Lost And Found ------------------------------------
+
+Temperature: 0.01       AUPRC score:0.282     FPR@TPR95:95.008
+Temperature: 0.1        AUPRC score:0.279     FPR@TPR95:95.083
+Temperature: 0.5        AUPRC score:0.268     FPR@TPR95:95.406
+Temperature: 0.7        AUPRC score:0.263     FPR@TPR95:95.574
+Temperature: 1.1        AUPRC score:0.255     FPR@TPR95:95.913
+
+------------------------------------   Road Anomaly  ------------------------------------
+
+Temperature: 0.01       AUPRC score:9.844       FPR@TPR95:95.003
+Temperature: 0.1        AUPRC score:9.795       FPR@TPR95:95.037
+Temperature: 0.5        AUPRC score:9.606       FPR@TPR95:95.171
+Temperature: 0.7        AUPRC score:9.527       FPR@TPR95:95.231
+Temperature: 1.1        AUPRC score:9.397       FPR@TPR95:95.319
+
+------------------------------------ Road Anomaly 21 -----------------------------------
+
+Temperature: 0.01       AUPRC score:14.801      FPR@TPR95:95.001
+Temperature: 0.1        AUPRC score:14.772      FPR@TPR95:95.012
+Temperature: 0.5        AUPRC score:14.674      FPR@TPR95:95.052
+Temperature: 0.7        AUPRC score:14.635      FPR@TPR95:95.067
+Temperature: 1.1        AUPRC score:14.570      FPR@TPR95:95.097
+
+------------------------------------ Road Obstacle 21 -----------------------------------
+
+Temperature: 0.01       AUPRC score:0.675      FPR@TPR95:94.996
+Temperature: 0.1        AUPRC score:0.680      FPR@TPR95:94.977
+Temperature: 0.5        AUPRC score:0.698      FPR@TPR95:94.885
+Temperature: 0.7        AUPRC score:0.707      FPR@TPR95:94.838
+Temperature: 1.1        AUPRC score:0.724      FPR@TPR95:94.745
+
+------------------------------------    FS Static    -----------------------------------
+
+Temperature: 0.01       AUPRC score:2.081      FPR@TPR95:95.005
+Temperature: 0.1        AUPRC score:2.066      FPR@TPR95:95.047
+Temperature: 0.5        AUPRC score:2.016      FPR@TPR95:95.183
+Temperature: 0.7        AUPRC score:2.000      FPR@TPR95:95.218
+Temperature: 1.1        AUPRC score:1.976      FPR@TPR95:95.267
+
