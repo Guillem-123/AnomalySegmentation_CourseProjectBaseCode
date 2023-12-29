@@ -39,6 +39,7 @@ def main():
     parser.add_argument('--cpu', action='store_true')
     parser.add_argument('--discriminant',default="msp")
     parser.add_argument('--temperature', default=1)
+    parser.add_argument('--rescale_treshold', default=1)
     args = parser.parse_args()
 
     if not os.path.exists('results.txt'):
@@ -74,6 +75,7 @@ def main():
     model.eval()
     
     temperature = float(args.temperature)
+    rescale_treshold = float(args.rescale_treshold)
 
     for path in glob.glob(os.path.expanduser(str(args.input[0]))):
         print(path)
@@ -91,7 +93,9 @@ def main():
           max_entropy = torch.div(max_entropy, torch.log(torch.tensor(result.shape[1])))
           anomaly_result = max_entropy.data.cpu().numpy()
         
-        image_array = np.where(anomaly_result >= 0.5, 1, 0)
+        #print((np.max(anomaly_result) - np.min(anomaly_result)) / 2)
+        treshold = (np.max(anomaly_result) - np.abs(np.min(anomaly_result))) / 2
+        image_array = np.where(anomaly_result >= treshold *  rescale_treshold, 1, 0)
         image = Image.fromarray((image_array * 255).astype(np.uint8), mode='L')
         path_to_anomaly_imgs = path.replace('images', 'anomaly_results')
         image.save(path_to_anomaly_imgs)
