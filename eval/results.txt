@@ -1,28 +1,30 @@
 ------------------------------------ Lost And Found ------------------------------------
 
-Discriminant: maxlogit      AUPRC score:0.21394580345845265   FPR@TPR95:96.44089788882255
-Discriminant: msp           AUPRC score:0.25708426668661466   FPR@TPR95:95.82944408003165
+Discriminant:maxlogit       AUPRC score:0.3876551357818974   FPR@TPR95:89.14881740732804
+Discriminant:msp            AUPRC score:0.2570842552934392   FPR@TPR95:95.8294439054367
+Discriminant:maxentropy     AUPRC score:0.33923571873876784  FPR@TPR95:92.80980187687466
 
 ------------------------------------   Road Anomaly  ------------------------------------
 
-Discriminant:maxlogit       AUPRC score:8.707969188132811   FPR@TPR95:93.76407140544615
-Discriminant:msp            AUPRC score:9.427066150787395   FPR@TPR95:95.30102402848716
-Discriminant:maxentropy     AUPRC score:9.106994287519719   FPR@TPR95:95.31258807669772
+Discriminant:maxlogit       AUPRC score:10.588900203066887   FPR@TPR95:93.0919394577933
+Discriminant:msp            AUPRC score:9.427066386288296    FPR@TPR95:95.30102648970976
+Discriminant:maxentropy     AUPRC score:10.388064007714481   FPR@TPR95:93.93201392019557
 
 ------------------------------------ Road Anomaly 21 -----------------------------------
 
-Discriminant: maxlogit      AUPRC score:13.193440419376595   FPR@TPR95:97.01505536399301
-Discriminant: msp           AUPRC score:14.585401429817283   FPR@TPR95:95.09013850015593
-Discriminant: maxentropy    AUPRC score:14.309849930559887   FPR@TPR95:96.71604360965756
+Discriminant:maxlogit       AUPRC score:18.359024544143917   FPR@TPR95:92.92120775452194
+Discriminant:msp            AUPRC score:14.585401356903779   FPR@TPR95:95.0901356431635
+Discriminant:maxentropy     AUPRC score:15.038421914033604   FPR@TPR95:94.63493810396633
 
 ------------------------------------ Road Obstacle 21 -----------------------------------
 
-Discriminant:maxlogit       AUPRC score:1.1526358923534636   FPR@TPR95:86.81554126232521
-Discriminant:msp            AUPRC score:0.7207946907342503   FPR@TPR95:94.76850887668616
-Discriminant:maxentropy     AUPRC score:0.8318293667597891   FPR@TPR95:94.08379962335046
+Discriminant:maxlogit       AUPRC score:0.45326843183227317  FPR@TPR95:96.97911669371727
+Discriminant:msp            AUPRC score:0.7207950718249202   FPR@TPR95:94.76850887668616
+Discriminant:maxentropy     AUPRC score:0.6417462687543569   FPR@TPR95:96.93459599699993
 
 ------------------------------------    FS Static    -----------------------------------
 
-Discriminant:maxlogit       AUPRC score:1.6452745847255508   FPR@TPR95:96.46149415840219
-Discriminant:msp            AUPRC score:1.9816942982820978   FPR@TPR95:95.25857651381605
-Discriminant:maxentropy     AUPRC score:1.952656649203596   FPR@TPR95:94.05240921567987
+Discriminant:maxlogit       AUPRC score:2.6498902448689394   FPR@TPR95:89.42350257868881
+Discriminant:msp            AUPRC score:1.9816943519051735   FPR@TPR95:95.25857620210165
+Discriminant:maxentropy     AUPRC score:2.176039284130929   FPR@TPR95:93.95554983023634
+

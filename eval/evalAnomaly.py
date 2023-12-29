@@ -94,9 +94,9 @@ def main():
           softmax_probs = torch.nn.functional.softmax(result.squeeze(0) / temperature, dim=0)
           anomaly_result = 1.0 - (np.max(softmax_probs.data.cpu().numpy(), axis=0))
         if (args.discriminant == "maxentropy"):
-          probs = torch.nn.functional.softmax(result.squeeze(0), dim=0)
-          entropy = torch.div(torch.sum(-probs * torch.log(probs), dim=1), torch.log(torch.tensor(probs.shape[1])))
-          anomaly_result = entropy.data.cpu().numpy()
+          max_entropy = (-torch.sum(torch.nn.functional.softmax(result.squeeze(0), dim=0) * torch.nn.functional.log_softmax(result.squeeze(0), dim=0), dim=0))
+          max_entropy = torch.div(max_entropy, torch.log(torch.tensor(result.shape[1])))
+          anomaly_result = max_entropy.data.cpu().numpy()
         pathGT = path.replace("images", "labels_masks")                
         if "RoadObsticle21" in pathGT:
            pathGT = pathGT.replace("webp", "png")
