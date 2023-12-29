@@ -151,7 +151,14 @@ def main():
     print(f'AUPRC score: {prc_auc*100.0}')
     print(f'FPR@TPR95: {fpr*100.0}')
 
-    file.write(('Discriminant:' + str(args.discriminant) + '    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0) ))
+    if (temperature == 1):
+        file.write(('Discriminant:' + str(args.discriminant) + '    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0)))
+    else: 
+        if not os.path.exists('results.txt'):
+            open('results-temperature.txt', 'w').close()
+        file = open('results-temperature.txt', 'a')
+        file.write(('Dataset: ' + str(path) + ' Temperature: ' + temperature + '    AUPRC score:' + str(prc_auc*100.0) + '   FPR@TPR95:' + str(fpr*100.0)))
+        file.write( "\n")
     file.close()
 
 if __name__ == '__main__':
