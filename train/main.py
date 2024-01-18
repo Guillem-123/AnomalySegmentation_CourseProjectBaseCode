@@ -80,6 +80,51 @@ class CrossEntropyLoss2d(torch.nn.Module):
 
     def forward(self, outputs, targets):
         return self.loss(torch.nn.functional.log_softmax(outputs, dim=1), targets)
+    
+class FocalLoss2d(torch.nn.Module):
+  def __init__(self, gamma=2, weight=None):
+      super(FocalLoss2d, self).__init__()
+      self.gamma = gamma
+      self.weight = weight
+
+  def forward(self, outputs, targets):
+      log_probs = torch.nn.functional.log_softmax(outputs, dim=1)
+      probs = torch.exp(log_probs)
+      focal_loss = -(1 - probs) ** self.gamma * log_probs
+      loss = torch.nn.functional.nll_loss(focal_loss, targets, weight=self.weight)
+      return loss
+  
+class JaccardLoss(torch.nn.Module):
+    def __init__(self, weight=None, smooth=1.0):
+        super(JaccardLoss, self).__init__()
+        self.smooth = smooth
+        self.weight = weight
+
+    def forward(self, outputs, targets):
+        intersection = torch.sum(outputs * targets)
+        union = torch.sum(outputs) + torch.sum(targets) - intersection
+        jaccard = (intersection + self.smooth) / (union + self.smooth)
+
+        if self.weight is not None:
+            jaccard = jaccard * self.weight
+
+        return 1.0 - jaccard
+    
+class DiceLoss(torch.nn.Module):
+    def __init__(self, weight=None, smooth=1.0):
+        super(DiceLoss, self).__init__()
+        self.smooth = smooth
+        self.weight = weight
+
+    def forward(self, outputs, targets):
+        intersection = torch.sum(outputs * targets)
+        union = torch.sum(outputs) + torch.sum(targets)
+        dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
+
+        if self.weight is not None:
+            dice = dice * self.weight
+
+        return 1.0 - dice
 
 
 def train(args, model, enc=False):
@@ -144,7 +189,15 @@ def train(args, model, enc=False):
 
     if args.cuda:
         weight = weight.cuda()
-    criterion = CrossEntropyLoss2d(weight)
+    if args.loss == "cross_entropy":
+        criterion = DiceLoss(weight)
+    if args.loss == "dice":
+        criterion = JaccardLoss(weight)
+    if args.loss == "jaccard":
+        criterion = CrossEntropyLoss2d(weight)
+    if args.loss == "joint":
+        criterion1 = CrossEntropyLoss2d(weight)
+        criterion2 = FocalLoss2d(weight=weight)
     print(type(criterion))
 
     savedir = f'../save/{args.savedir}'
@@ -230,11 +283,21 @@ def train(args, model, enc=False):
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
 
             optimizer.zero_grad()
-            loss = criterion(outputs, targets[:, 0])
-            loss.backward()
-            optimizer.step()
+            if args.loss == "joint":
+                loss1 = criterion1(outputs, targets[:, 0])
+                loss2 = criterion2(outputs, targets[:, 0])
+                loss1.backward(retain_graph=True)
+                loss2.backward()
+                optimizer.step()
 
-            epoch_loss.append(loss.data)
+                epoch_loss.append(loss1.data)
+                epoch_loss.append(loss2.data)
+            else:
+                loss = criterion(outputs, targets[:, 0])
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss.append(loss.data)
             time_train.append(time.time() - start_time)
 
             if (doIouTrain):
@@ -293,8 +356,21 @@ def train(args, model, enc=False):
             targets = Variable(labels, volatile=True)
             outputs = model(inputs, only_encode=enc) 
 
-            loss = criterion(outputs, targets[:, 0])
-            epoch_loss_val.append(loss.data)
+            if args.loss == "joint":
+                loss1 = criterion1(outputs, targets[:, 0])
+                loss2 = criterion2(outputs, targets[:, 0])
+                loss1.backward(retain_graph=True)
+                loss2.backward()
+                optimizer.step()
+
+                epoch_loss.append(loss1.data)
+                epoch_loss.append(loss2.data)
+            else:
+                loss = criterion(outputs, targets[:, 0])
+                loss.backward()
+                optimizer.step()
+
+                epoch_loss.append(loss.data)
             time_val.append(time.time() - start_time)
 
 
@@ -497,6 +573,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs-save', type=int, default=0)    #You can use this value to save model every X epochs
     parser.add_argument('--savedir', required=True)
     parser.add_argument('--decoder', action='store_true')
+    parser.add_argument('--loss', action='cross_entropy')
     parser.add_argument('--pretrainedEncoder') #, default="../trained_models/erfnet_encoder_pretrained.pth.tar")
     parser.add_argument('--visualize', action='store_true')
 
