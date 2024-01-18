@@ -40,11 +40,8 @@ def load_my_state_dict(model, state_dict, model_name):
                     continue
             else:
                 own_state[name].copy_(param)
-    elif model_name == 'bisenet':
-        state_dict = {f"module.{k}": v if not k.startswith("module.") else v for k, v in loaded_state_dict.items()}
+    else:
         model = model.load_state_dict(state_dict)
-    elif model_name == 'enet' :
-        model = model.load_state_dict(state_dict['state_dict'])
     return model
 
 def main():
@@ -64,7 +61,7 @@ def main():
     parser.add_argument('--num-workers', type=int, default=4)
     parser.add_argument('--batch-size', type=int, default=1)
     parser.add_argument('--cpu', action='store_true')
-    parser.add_argument('--model', default='erfnet', help="choose witch model load between erfnet, enet, bisenet")
+    parser.add_argument('--model', default='erfnet', help="choose which model load between erfnet, enet, bisenet")
     parser.add_argument('--globalpath', default=True, help="choose if the path provided is global or not" )
     args = parser.parse_args()
     anomaly_score_list = []
@@ -97,9 +94,18 @@ def main():
 
     if (not args.cpu):
         model = torch.nn.DataParallel(model).cuda()
+    else:
+        if args.model != 'erfnet':
+            raise Exception("Impossible to eval this model without cuda")
 
-    #load state_dict 
-    model = load_my_state_dict(model, torch.load(weightspath, map_location=lambda storage, loc: storage), args.model)
+    #load state_dict
+    state_dict = torch.load(weightspath, map_location=lambda storage, loc: storage)
+    if args.model == 'bisenet':
+        state_dict = {f"module.{k}": v if not k.startswith("module.") else v for k, v in state_dict.items()}
+    elif args.model == 'enet':
+        state_dict = state_dict['state_dict']
+
+    model = load_my_state_dict(model, state_dict, args.model)
     print ("Model and weights LOADED successfully")
     model.eval()
     
