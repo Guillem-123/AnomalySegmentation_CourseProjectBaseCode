@@ -397,14 +397,14 @@ def train(args, model, enc=False):
                 loss2.backward()
                 optimizer.step()
 
-                epoch_loss.append(loss1.data)
-                epoch_loss.append(loss2.data)
+                epoch_loss_val.append(loss1.data)
+                epoch_loss_val.append(loss2.data)
             else:
                 loss = criterion(outputs, targets[:, 0])
                 loss.backward()
                 optimizer.step()
 
-                epoch_loss.append(loss.data)
+                epoch_loss_val.append(loss.data)
             time_val.append(time.time() - start_time)
 
 
