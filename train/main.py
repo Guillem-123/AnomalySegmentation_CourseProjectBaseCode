@@ -94,37 +94,67 @@ class FocalLoss2d(torch.nn.Module):
       loss = torch.nn.functional.nll_loss(focal_loss, targets, weight=self.weight)
       return loss
   
-class JaccardLoss(torch.nn.Module):
-    def __init__(self, weight=None, smooth=1.0):
-        super(JaccardLoss, self).__init__()
-        self.smooth = smooth
+class JaccardLoss2d(torch.nn.Module):
+
+    def __init__(self, weight=None):
+        super(JaccardLoss2d, self).__init__()
         self.weight = weight
 
     def forward(self, outputs, targets):
-        intersection = torch.sum(outputs * targets)
-        union = torch.sum(outputs) + torch.sum(targets) - intersection
-        jaccard = (intersection + self.smooth) / (union + self.smooth)
+        smooth = 1e-5  # Smoothing factor to avoid division by zero
 
+        # Convert outputs to probabilities using softmax
+        probs = torch.nn.functional.softmax(outputs, dim=1)
+
+        # Make sure the target tensor has the same number of channels as the output
+        targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=outputs.shape[1]).permute(0, 3, 1, 2).float()
+
+        # Compute intersection and union
+        intersection = torch.sum(probs * targets_one_hot, dim=(2, 3))
+        union = torch.sum(probs + targets_one_hot, dim=(2, 3)) - intersection
+
+        # Compute Jaccard loss
+        jaccard_loss = 1.0 - (intersection + smooth) / (union + smooth)
+
+        # Apply optional weights
         if self.weight is not None:
-            jaccard = jaccard * self.weight
+            jaccard_loss = jaccard_loss * self.weight
 
-        return 1.0 - jaccard
+        # Average over batch dimension
+        loss = torch.mean(jaccard_loss)
+
+        return loss
     
-class DiceLoss(torch.nn.Module):
-    def __init__(self, weight=None, smooth=1.0):
-        super(DiceLoss, self).__init__()
-        self.smooth = smooth
+class DiceLoss2d(torch.nn.Module):
+
+    def __init__(self, weight=None):
+        super(DiceLoss2d, self).__init__()
         self.weight = weight
 
     def forward(self, outputs, targets):
-        intersection = torch.sum(outputs * targets)
-        union = torch.sum(outputs) + torch.sum(targets)
-        dice = (2.0 * intersection + self.smooth) / (union + self.smooth)
+        smooth = 1e-5  # Smoothing factor to avoid division by zero
 
+        # Convert outputs to probabilities using softmax
+        probs = torch.nn.functional.softmax(outputs, dim=1)
+
+        # Make sure the target tensor has the same number of channels as the output
+        targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=outputs.shape[1]).permute(0, 3, 1, 2).float()
+
+        # Compute intersection and union
+        intersection = torch.sum(probs * targets_one_hot, dim=(2, 3))
+        total = torch.sum(probs + targets_one_hot, dim=(2, 3))
+
+        # Compute Dice loss
+        dice_loss = 1.0 - (2 * intersection + smooth) / (total + smooth)
+
+        # Apply optional weights
         if self.weight is not None:
-            dice = dice * self.weight
+            dice_loss = dice_loss * self.weight
 
-        return 1.0 - dice
+        # Average over batch dimension
+        loss = torch.mean(dice_loss)
+
+        return loss
 
 
 def train(args, model, enc=False):
@@ -190,15 +220,19 @@ def train(args, model, enc=False):
     if args.cuda:
         weight = weight.cuda()
     if args.loss == "cross_entropy":
-        criterion = DiceLoss(weight)
-    if args.loss == "dice":
-        criterion = JaccardLoss(weight)
-    if args.loss == "jaccard":
         criterion = CrossEntropyLoss2d(weight)
+        print(type(criterion))
+    if args.loss == "jaccard":
+        criterion = JaccardLoss2d(weight)
+        print(type(criterion))
+    if args.loss == "dice":
+        criterion = DiceLoss2d(weight)
+        print(type(criterion))
     if args.loss == "joint":
         criterion1 = CrossEntropyLoss2d(weight)
         criterion2 = FocalLoss2d(weight=weight)
-    print(type(criterion))
+        print(type(criterion1))
+        print(type(criterion2))
 
     savedir = f'../save/{args.savedir}'
 
@@ -573,7 +607,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs-save', type=int, default=0)    #You can use this value to save model every X epochs
     parser.add_argument('--savedir', required=True)
     parser.add_argument('--decoder', action='store_true')
-    parser.add_argument('--loss', action='cross_entropy')
+    parser.add_argument('--loss', default='cross_entropy')
     parser.add_argument('--pretrainedEncoder') #, default="../trained_models/erfnet_encoder_pretrained.pth.tar")
     parser.add_argument('--visualize', action='store_true')
 
