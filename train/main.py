@@ -125,10 +125,9 @@ class JaccardLoss2d(torch.nn.Module):
 
         return loss
     
-class DiceLoss2d(torch.nn.Module):
-
+class LogitNormalizationLoss2d(torch.nn.Module):
     def __init__(self, weight=None):
-        super(DiceLoss2d, self).__init__()
+        super(LogitNormalizationLoss2d, self).__init__()
         self.weight = weight
 
     def forward(self, outputs, targets):
@@ -140,19 +139,15 @@ class DiceLoss2d(torch.nn.Module):
         # Make sure the target tensor has the same number of channels as the output
         targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=outputs.shape[1]).permute(0, 3, 1, 2).float()
 
-        # Compute intersection and union
-        intersection = torch.sum(probs * targets_one_hot, dim=(2, 3))
-        total = torch.sum(probs + targets_one_hot, dim=(2, 3))
-
-        # Compute Dice loss
-        dice_loss = 1.0 - (2 * intersection + smooth) / (total + smooth)
+        # Compute logit normalization loss
+        logit_normalization_loss = -torch.sum(targets_one_hot * torch.log(probs + smooth), dim=(2, 3))
 
         # Apply optional weights
         if self.weight is not None:
-            dice_loss = dice_loss * self.weight
+            logit_normalization_loss = logit_normalization_loss * self.weight
 
         # Average over batch dimension
-        loss = torch.mean(dice_loss)
+        loss = torch.mean(logit_normalization_loss)
 
         return loss
 
@@ -225,11 +220,14 @@ def train(args, model, enc=False):
     if args.loss == "jaccard":
         criterion = JaccardLoss2d(weight)
         print(type(criterion))
-    if args.loss == "dice":
-        criterion = DiceLoss2d(weight)
+    if args.loss == "logit_norm":
+        criterion = LogitNormalizationLoss2d(weight)
         print(type(criterion))
-    if args.loss == "joint":
-        criterion1 = CrossEntropyLoss2d(weight)
+    if args.loss == "joint1":
+        criterion1 = JaccardLoss2d(weight)
+        criterion2 = FocalLoss2d(weight=weight)
+    if args.loss == "joint2":
+        criterion1 = LogitNormalizationLoss2d(weight)
         criterion2 = FocalLoss2d(weight=weight)
         print(type(criterion1))
         print(type(criterion2))
@@ -317,7 +315,7 @@ def train(args, model, enc=False):
             #print("targets", np.unique(targets[:, 0].cpu().data.numpy()))
 
             optimizer.zero_grad()
-            if args.loss == "joint":
+            if (args.loss == "joint1" or args.loss == "joint2"):
                 loss1 = criterion1(outputs, targets[:, 0])
                 loss2 = criterion2(outputs, targets[:, 0])
                 loss1.backward(retain_graph=True)
@@ -390,7 +388,7 @@ def train(args, model, enc=False):
             targets = Variable(labels, volatile=True)
             outputs = model(inputs, only_encode=enc) 
 
-            if args.loss == "joint":
+            if (args.loss == "joint1" or args.loss == "joint2"):
                 loss1 = criterion1(outputs, targets[:, 0])
                 loss2 = criterion2(outputs, targets[:, 0])
                 loss1.backward(retain_graph=True)
