@@ -104,8 +104,12 @@ def main():
         state_dict = {f"module.{k}": v if not k.startswith("module.") else v for k, v in state_dict.items()}
     elif args.model == 'enet':
         state_dict = state_dict['state_dict']
+        state_dict = {f"module.{k}": v if not k.startswith("module.") else v for k, v in state_dict.items()}
 
-    model = load_my_state_dict(model, state_dict, args.model)
+    if args.model == 'erfnet':
+         model = load_my_state_dict(model, state_dict, args.model)
+    else: 
+        model.load_state_dict(state_dict)
     print ("Model and weights LOADED successfully")
     model.eval()
     
@@ -114,7 +118,10 @@ def main():
         images = torch.from_numpy(np.array(Image.open(path).convert('RGB'))).unsqueeze(0).float()
         images = images.permute(0,3,1,2)
         with torch.no_grad():
-            result = model(images)
+            if args.model == 'bisenet':
+                result = model(images)[0]
+            else:
+                result = model(images)
         anomaly_result = result.squeeze(0).data.cpu().numpy()[19,:,:]   #we are using the last channel for anomaly_result which is the background
         pathGT = path.replace("images", "labels_masks")                
         if "RoadObsticle21" in pathGT:
@@ -154,8 +161,6 @@ def main():
 
     ood_mask = (ood_gts == 1)
     ind_mask = (ood_gts == 0)
-    if anomaly_scores.shape[1]>1080:
-        anomaly_scores = anomaly_scores[:,:1080,:]
     ood_out = anomaly_scores[ood_mask]
     ind_out = anomaly_scores[ind_mask]
 
