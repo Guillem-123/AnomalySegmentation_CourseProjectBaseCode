@@ -161,8 +161,6 @@ def main():
 
     ood_mask = (ood_gts == 1)
     ind_mask = (ood_gts == 0)
-    if anomaly_scores.shape[1]>1080:
-        anomaly_scores = anomaly_scores[:,:1080,:]
     ood_out = anomaly_scores[ood_mask]
     ind_out = anomaly_scores[ind_mask]
 
