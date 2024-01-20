@@ -101,27 +101,26 @@ class JaccardLoss2d(torch.nn.Module):
         self.weight = weight
 
     def forward(self, outputs, targets):
-        smooth = 1e-5  # Smoothing factor to avoid division by zero
+        targets = torch.unsqueeze(targets, dim=1)
+        targets = targets.expand(-1, 20, -1, -1)  # Add channel dimension to targets
 
-        # Convert outputs to probabilities using softmax
-        probs = torch.nn.functional.softmax(outputs, dim=1)
-
-        # Make sure the target tensor has the same number of channels as the output
-        targets_one_hot = torch.nn.functional.one_hot(targets, num_classes=outputs.shape[1]).permute(0, 3, 1, 2).float()
-
-        # Compute intersection and union
-        intersection = torch.sum(probs * targets_one_hot, dim=(2, 3))
-        union = torch.sum(probs + targets_one_hot, dim=(2, 3)) - intersection
-
-        # Compute Jaccard loss
-        jaccard_loss = 1.0 - (intersection + smooth) / (union + smooth)
-
-        # Apply optional weights
+        # weighting the data
         if self.weight is not None:
-            jaccard_loss = jaccard_loss * self.weight
+          self.weight = self.weight.view(1, 20, 1, 1)
+          outputs = outputs * self.weight
 
-        # Average over batch dimension
-        loss = torch.mean(jaccard_loss)
+        # Flatten predictions and targets
+        outputs_flat = outputs.reshape(outputs.size()[0], -1)
+        targets_flat = targets.reshape(targets.size()[0], -1)
+
+        # Intersection and union
+        intersection = torch.sum(torch.min(outputs_flat, targets_flat), dim=1, keepdim=True)
+        union = torch.sum(torch.max(outputs_flat, targets_flat), dim=1, keepdim=True)
+
+        jaccard = (intersection + 1e-8) / (union + 1e-8)
+
+        # Average the Jaccard indices along the batches
+        loss = 1 - torch.mean(jaccard)
 
         return loss
     
