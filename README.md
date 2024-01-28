@@ -1,4 +1,4 @@
-## Anomaly Segmentation Project | Michael Di Giorgio (s317819) - Ethan Morleo (s317821) - Guillem Abello (s321071)
+## Anomaly Segmentation Project | Michael Di Giorgio (s317819) - Ethan Morleo (s317821) - Guillem Abello Domenech (s321071)
 
 In this repository ypu will find the code used for the anomaly segmentation project (Project 4) for the Advanced Machine Learning course, submitted for the 06/02/2024 exam date.
 
